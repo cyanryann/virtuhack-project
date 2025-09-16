@@ -4,7 +4,9 @@ can.height = window.innerHeight;
 var context = can.getContext("2d");
 var radius = 50;
 var circleArray = [];
+var grid = [];
 var canShoot = true;
+var midShoot = false;
 window.addEventListener("mousemove", function(event) {
     mouse.x = event.x;
     mouse.y = event.y;
@@ -18,11 +20,12 @@ window.addEventListener("mousemove", function(event) {
     }
 })
 window.addEventListener("click", function() {
-    if (canShoot)
+    if (canShoot && !midShoot)
     {
         var newcirc = new Circle(this.innerWidth / 2, this.innerHeight - radius, radius);
         circleArray.push(newcirc);
         console.log(newcirc)
+        midShoot = true;
     }
 
 })
@@ -46,41 +49,128 @@ function Circle(x, y, radius) {
         context.beginPath();
         context.arc(this.x, this.y,this.radius,0,Math.PI*2, false);
         context.strokeStyle = "black";
-        context.fillStyle = "black"
+        context.fillStyle = "black";
         context.fill();
     }
     this.update = function() {
         this.x += this.dx;
         this.y += this.dy;
+        if (this.y - radius <= 0)
+        {
+            this.stop();
+        }
         if (this.x + radius > innerWidth || this.x - radius <= 0)
         {
             this.dx = -this.dx;
         }
         this.draw();
     }
+    this.stop = function() {
+        this.dx = 0;
+        this.dy = 0;
+        midShoot = false;
+        collide(this);
+    }
+    this.relocate = function(newx, newy) {
+        this.x = newx;
+        this.y = newy;
+    }
 }
-function drawGrid(rows, columns) {
-    for (var i = 0; i < rows; i++)
-    {
-        for (var k = 0; k < columns; k++)
+function Cell(x1, x2, y1, y2) {
+    this.x1 = x1;
+    this.x2 = x2;
+    this.y1 = y1;
+    this.y2 = y2;
+    this.x = (x2-x1) / 2 + x1;
+    this.y = (y2-y1) / 2 + y1;
+    this.isFilled = false;
+    this.draw = function() {
+        if (this.isFilled == true)
         {
-
+            context.fillStyle = "blue";
+        }
+        else
+        {
+            context.fillStyle = "red";
+        }
+        context.beginPath();
+        context.fillRect(this.x1, this.y1, (this.x2-this.x1), (this.y2-this.y1))
+    }
+    this.distance = function(circle) {
+        if (this.x < circle.x)
+        {
+            if (this.y < circle.y)
+            {
+                return Math.sqrt(Math.pow(this.x - (circle.x - circle.radius), 2) + Math.pow(this.y - (circle.y - circle.radius), 2));
+            }
+            else
+            {
+                return Math.sqrt(Math.pow(this.x - (circle.x - circle.radius), 2) + Math.pow(this.y - (circle.y + circle.radius), 2));
+            }
+        }
+        else
+        {
+            if (this.y < circle.y)
+            {
+                return Math.sqrt(Math.pow(this.x - (circle.x + circle.radius), 2) + Math.pow(this.y - (circle.y - circle.radius), 2));
+            }
+            else
+            {
+                return Math.sqrt(Math.pow(this.x - (circle.x + circle.radius), 2) + Math.pow(this.y - (circle.y + circle.radius), 2));
+            }
         }
     }
 }
-function collide() {
-    /*
-    WHEN CIRCLE HITS OTHER CIRCLE OR TOP OF SCREEN, STOP IT
-    AND CHECK FOR WHAT GRID CELL IT FALLS IN
-    */
+function createGrid(rows, columns) {
+    for (var i = 0; i < columns; i++)
+    {
+        for (var k = 0; k < rows; k++) 
+        {
+            var newCell = new Cell(k * (innerWidth / rows), (k+1) * (innerWidth/rows),i * (innerHeight / (columns*2)), (i+1) * (innerHeight / (columns*2)));
+            grid.push(newCell);
+            console.log(newCell);
+        }
+    }
+}
+function drawGrid(rows, columns) {
+    for (var i = 0; i < columns; i++)
+    {
+        for (var k = 0; k < rows; k++)
+        {
+            context.beginPath();
+            context.strokeRect(k * (innerWidth / rows), i * (innerHeight / (columns*2)), innerWidth/rows, innerHeight / (columns * 2));
+            context.strokeStyle = "black";
+            context.stroke();
+        }
+    }
+}
+function collide(circle) {
+    var cell = null;
+    for (var i = 0; i < grid.length; i ++)
+    {
+        if (!grid[i].isFilled && cell == null)
+        {
+            cell = i;
+        }
+        console.log(grid[i].distance(circle));
+        if (grid[cell].distance(circle) > grid[i].distance(circle) && !grid[i].isFilled) {
+            cell = i;
+        }
+    }
+    console.log(cell);
+    grid[cell].isFilled = true;
+    circle.relocate(grid[cell].x, grid[cell].y);
 }
 function animate() {
     requestAnimationFrame(animate);
     context.clearRect(0,0,innerWidth, innerHeight);
+    for (var i = 0; i < grid.length; i++) {
+        grid[i].draw();
+    }
     for(var i = 0; i < circleArray.length; i++) {
         circleArray[i].update();
-        console.log("updating");
     }
+
     context.beginPath();
     context.moveTo(this.innerWidth / 2, this.innerHeight);
     context.lineTo(mouse.x, mouse.y);
@@ -90,5 +180,7 @@ function animate() {
         context.strokeStyle = "red";
     }
     context.stroke();
+    drawGrid(8, 4);
 }
+createGrid(8, 4);
 animate();
