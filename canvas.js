@@ -3,6 +3,8 @@ can.width = window.innerWidth;
 can.height = window.innerHeight;
 var context = can.getContext("2d");
 var radius = 40;
+var columns = 8;
+var rows = 4;
 var circleArray = [];
 var grid = [];
 var canShoot = true;
@@ -80,20 +82,24 @@ function Circle(x, y, radius) {
             this.dx = -this.dx;
         }
         this.draw();
-        for (var i = 0; i < grid.length; i++)
+        if (!this.hasStopped)
         {
-            if (grid[i].isFilled)
+            for (var i = 0; i < grid.length; i++)
             {
-                if ((this.x + radius >= grid[i].x1) && this.x+radius <= grid[i].x2)
+                if (grid[i].isFilled)
                 {
-                    if ((this.y - radius >= grid[i].y1) && (this.y -radius <= grid[i].y2))
+                    if ((this.x + radius >= grid[i].x1) && this.x+radius <= grid[i].x2)
                     {
-                        this.stop();
-                    }
+                        if ((this.y - radius >= grid[i].y1) && (this.y -radius <= grid[i].y2))
+                        {
+                            this.stop();
+                        }
 
+                    }
                 }
             }
         }
+
     }
     this.stop = function() {
         if (!this.hasStopped)
@@ -118,6 +124,8 @@ function Cell(x1, x2, y1, y2) {
     this.x = (x2-x1) / 2 + x1;
     this.y = (y2-y1) / 2 + y1;
     this.isFilled = false;
+    this.circle = null;
+    this.adjacentCount = 1;
     this.draw = function() {
         if (this.isFilled == true)
         {
@@ -153,6 +161,12 @@ function Cell(x1, x2, y1, y2) {
                 return Math.sqrt(Math.pow(this.x - (circle.x + circle.radius), 2) + Math.pow(this.y - (circle.y + circle.radius), 2));
             }
         }
+    }
+    this.clear = function() {
+        var index = circleArray.indexOf(this.circle)
+        circleArray.splice(index, 1);
+        this.circle = null;
+        this.isFilled = false;
     }
 }
 function createGrid(rows, columns) {
@@ -193,7 +207,20 @@ function collide(circle) {
     console.log(cell);
     console.log(grid[cell].distance(circle));
     grid[cell].isFilled = true;
+    grid[cell].circle = circle;
     circle.relocate(grid[cell].x, grid[cell].y);
+    if (circle.id == grid[cell-1].circle.id)
+    {
+        grid[cell].clear();
+        grid[cell-1].clear();
+        console.log("CLEAR METHOD");
+    }
+    else if (circle.id == grid[cell+1].circle.id)
+    {
+        grid[cell].clear();
+        grid[cell-1].clear();
+        console.log("CLEAR METHOD");
+    }
 }
 function animate() {
     requestAnimationFrame(animate);
@@ -214,7 +241,7 @@ function animate() {
         context.strokeStyle = "red";
     }
     context.stroke();
-    drawGrid(8, 4);
+    drawGrid(columns, rows);
 }
-createGrid(8, 4);
+createGrid(columns, rows);
 animate();
