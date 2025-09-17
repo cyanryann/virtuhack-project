@@ -2,7 +2,7 @@ var can = document.querySelector("canvas");
 can.width = window.innerWidth;
 can.height = window.innerHeight;
 var context = can.getContext("2d");
-var radius = 50;
+var radius = 40;
 var circleArray = [];
 var grid = [];
 var canShoot = true;
@@ -45,11 +45,27 @@ function Circle(x, y, radius) {
     this.radius = radius;
     this.dx = setdX() * 10;
     this.dy = setdY() * 10;
+    this.hasStopped = false;
+    this.id = Math.floor(Math.random()* 3) + 1;
+    switch (this.id) {
+        case 1:
+            this.color = "green";
+            break;
+        case 2:
+            this.color = "blue";
+            break;
+        case 3:
+            this.color = "yellow";
+            break;
+        default:
+            this.color = "black";
+            break;
+    }
     this.draw = function() {
         context.beginPath();
         context.arc(this.x, this.y,this.radius,0,Math.PI*2, false);
         context.strokeStyle = "black";
-        context.fillStyle = "black";
+        context.fillStyle = this.color;
         context.fill();
     }
     this.update = function() {
@@ -64,12 +80,30 @@ function Circle(x, y, radius) {
             this.dx = -this.dx;
         }
         this.draw();
+        for (var i = 0; i < grid.length; i++)
+        {
+            if (grid[i].isFilled)
+            {
+                if ((this.x + radius >= grid[i].x1) && this.x+radius <= grid[i].x2)
+                {
+                    if ((this.y - radius >= grid[i].y1) && (this.y -radius <= grid[i].y2))
+                    {
+                        this.stop();
+                    }
+
+                }
+            }
+        }
     }
     this.stop = function() {
-        this.dx = 0;
-        this.dy = 0;
-        midShoot = false;
-        collide(this);
+        if (!this.hasStopped)
+        {
+            this.hasStopped = true;
+            this.dx = 0;
+            this.dy = 0;
+            midShoot = false;
+            collide(this);
+        }
     }
     this.relocate = function(newx, newy) {
         this.x = newx;
@@ -87,7 +121,7 @@ function Cell(x1, x2, y1, y2) {
     this.draw = function() {
         if (this.isFilled == true)
         {
-            context.fillStyle = "blue";
+            context.fillStyle = "white";
         }
         else
         {
@@ -128,7 +162,6 @@ function createGrid(rows, columns) {
         {
             var newCell = new Cell(k * (innerWidth / rows), (k+1) * (innerWidth/rows),i * (innerHeight / (columns*2)), (i+1) * (innerHeight / (columns*2)));
             grid.push(newCell);
-            console.log(newCell);
         }
     }
 }
@@ -145,19 +178,20 @@ function drawGrid(rows, columns) {
     }
 }
 function collide(circle) {
-    var cell = null;
-    for (var i = 0; i < grid.length; i ++)
+    var cell = grid.length-1;
+    console.log("circle (x,y): " + circle.x + " , " + circle.y);
+    for (let i = 0; i < grid.length; i++)
     {
         if (!grid[i].isFilled && cell == null)
         {
             cell = i;
         }
-        console.log(grid[i].distance(circle));
-        if (grid[cell].distance(circle) > grid[i].distance(circle) && !grid[i].isFilled) {
+        else if (grid[cell].distance(circle) > grid[i].distance(circle) && !grid[i].isFilled) {
             cell = i;
         }
     }
     console.log(cell);
+    console.log(grid[cell].distance(circle));
     grid[cell].isFilled = true;
     circle.relocate(grid[cell].x, grid[cell].y);
 }
