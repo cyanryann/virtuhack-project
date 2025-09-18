@@ -48,7 +48,8 @@ function Circle(x, y, radius) {
     this.dx = setdX() * 10;
     this.dy = setdY() * 10;
     this.hasStopped = false;
-    this.id = Math.floor(Math.random()* 3) + 1;
+    this.next = Math.floor(Math.random()*3) + 1;
+    this.id = this.next;
     switch (this.id) {
         case 1:
             this.color = "green";
@@ -125,7 +126,9 @@ function Cell(x1, x2, y1, y2) {
     this.y = (y2-y1) / 2 + y1;
     this.isFilled = false;
     this.circle = null;
+    this.id = null;
     this.adjacentCount = 1;
+    this.adjacent = [];
     this.draw = function() {
         if (this.isFilled == true)
         {
@@ -167,6 +170,7 @@ function Cell(x1, x2, y1, y2) {
         circleArray.splice(index, 1);
         this.circle = null;
         this.isFilled = false;
+        this.id = null;
     }
 }
 function createGrid(rows, columns) {
@@ -177,6 +181,40 @@ function createGrid(rows, columns) {
             var newCell = new Cell(k * (innerWidth / rows), (k+1) * (innerWidth/rows),i * (innerHeight / (columns*2)), (i+1) * (innerHeight / (columns*2)));
             grid.push(newCell);
         }
+    }
+    for (var i = 0; i < grid.length; i++)
+    {
+        if (grid[i-1] != null)
+        {
+            if (grid[i].y1 == grid[i-1].y1)
+            {
+                grid[i].adjacent.push(i-1);
+            }
+        }
+        if (grid[i+1] != null)
+        {
+            if (grid[i].y1 == grid[i+1].y1)
+            {
+                grid[i].adjacent.push(i+1);
+            }
+        }
+        if (grid[i+rows] != null)
+        {
+            console.log("CHECK FOR SPOT BELOW" + i);
+            if (grid[i].x1 == grid[i+rows].x1)
+            {
+                grid[i].adjacent.push(i+rows);
+            }
+        }
+        if (grid[i-rows] != null)
+        {
+            console.log("CHECK FOR SPOT ABOVE" + i);
+            if (grid[i].x1 == grid[i-rows].x1)
+            {
+                grid[i].adjacent.push(i-rows);
+            }
+        }
+        console.log("the adjacents of grid spot: " + i + " are " + grid[i].adjacent);
     }
 }
 function drawGrid(rows, columns) {
@@ -192,6 +230,7 @@ function drawGrid(rows, columns) {
     }
 }
 function collide(circle) {
+    var clearNum = 0;
     var cell = grid.length-1;
     console.log("circle (x,y): " + circle.x + " , " + circle.y);
     for (let i = 0; i < grid.length; i++)
@@ -208,18 +247,19 @@ function collide(circle) {
     console.log(grid[cell].distance(circle));
     grid[cell].isFilled = true;
     grid[cell].circle = circle;
+    grid[cell].id = circle.id;
     circle.relocate(grid[cell].x, grid[cell].y);
-    if (circle.id == grid[cell-1].circle.id)
+    for (var i = 0; i < grid[cell].adjacent.length; i++)
     {
-        grid[cell].clear();
-        grid[cell-1].clear();
-        console.log("CLEAR METHOD");
+        if (grid[grid[cell].adjacent[i]].id == grid[cell].id)
+        {
+            clearNum++;
+            grid[grid[cell].adjacent[i]].clear();
+        }
     }
-    else if (circle.id == grid[cell+1].circle.id)
+    if (clearNum > 0)
     {
         grid[cell].clear();
-        grid[cell-1].clear();
-        console.log("CLEAR METHOD");
     }
 }
 function animate() {
