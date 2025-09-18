@@ -50,6 +50,8 @@ function Circle(x, y, radius) {
     this.hasStopped = false;
     this.next = Math.floor(Math.random()*3) + 1;
     this.id = this.next;
+    this.cellID = null;
+    this.isClearing = false;
     switch (this.id) {
         case 1:
             this.color = "green";
@@ -81,6 +83,14 @@ function Circle(x, y, radius) {
         if (this.x + radius > innerWidth || this.x - radius <= 0)
         {
             this.dx = -this.dx;
+        }
+        if (this.isClearing)
+        {
+            this.radius++;
+            if (this.radius >= radius+15)
+            {
+                grid[this.cellID].clear();
+            }
         }
         this.draw();
         if (!this.hasStopped)
@@ -116,6 +126,9 @@ function Circle(x, y, radius) {
         this.x = newx;
         this.y = newy;
     }
+    this.startClear = function() {
+        this.isClearing = true;
+    }
 }
 function Cell(x1, x2, y1, y2) {
     this.x1 = x1;
@@ -127,7 +140,6 @@ function Cell(x1, x2, y1, y2) {
     this.isFilled = false;
     this.circle = null;
     this.id = null;
-    this.adjacentCount = 1;
     this.adjacent = [];
     this.draw = function() {
         if (this.isFilled == true)
@@ -140,6 +152,7 @@ function Cell(x1, x2, y1, y2) {
         }
         context.beginPath();
         context.fillRect(this.x1, this.y1, (this.x2-this.x1), (this.y2-this.y1))
+
     }
     this.distance = function(circle) {
         if (this.x < circle.x)
@@ -166,11 +179,19 @@ function Cell(x1, x2, y1, y2) {
         }
     }
     this.clear = function() {
-        var index = circleArray.indexOf(this.circle)
-        circleArray.splice(index, 1);
-        this.circle = null;
-        this.isFilled = false;
-        this.id = null;
+        if (!this.circle.isClearing)
+        {
+            this.circle.startClear();
+        }
+        else
+        {
+            var index = circleArray.indexOf(this.circle)
+            circleArray.splice(index, 1);
+            this.circle = null;
+            this.isFilled = false;
+            this.id = null;
+        }
+
     }
 }
 function createGrid(rows, columns) {
@@ -246,6 +267,7 @@ function collide(circle) {
     console.log(cell);
     console.log(grid[cell].distance(circle));
     grid[cell].isFilled = true;
+    circle.cellID = cell;
     grid[cell].circle = circle;
     grid[cell].id = circle.id;
     circle.relocate(grid[cell].x, grid[cell].y);
