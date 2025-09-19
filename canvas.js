@@ -9,6 +9,8 @@ var circleArray = [];
 var grid = [];
 var canShoot = true;
 var midShoot = false;
+var next = Math.floor(Math.random() * 3) + 1;
+var nextColor = idToColor(next);
 window.addEventListener("mousemove", function(event) {
     mouse.x = event.x;
     mouse.y = event.y;
@@ -24,10 +26,12 @@ window.addEventListener("mousemove", function(event) {
 window.addEventListener("click", function() {
     if (canShoot && !midShoot)
     {
-        var newcirc = new Circle(this.innerWidth / 2, this.innerHeight - radius, radius);
+        var newcirc = new Circle(this.innerWidth / 2, this.innerHeight - radius, radius, next);
         circleArray.push(newcirc);
         console.log(newcirc)
         midShoot = true;
+        next = Math.floor(Math.random()*3)+1;
+        nextColor = idToColor(next);
     }
 
 })
@@ -41,26 +45,40 @@ function setdX() {
 function setdY() {
     return (mouse.y - this.innerHeight) / (this.innerHeight);
 }
-function Circle(x, y, radius) {
+function idToColor(id) {
+    switch (id) {
+        case 1:
+            return "green";
+        case 2:
+            return "blue";
+        case 3:
+            return "yellow";
+        default:
+            return "black";
+    }
+}
+function Circle(x, y, radius, next) {
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.dx = setdX() * 10;
     this.dy = setdY() * 10;
     this.hasStopped = false;
-    this.next = Math.floor(Math.random()*3) + 1;
-    this.id = this.next;
+    this.id = next
     this.cellID = null;
     this.isClearing = false;
     switch (this.id) {
         case 1:
             this.color = "green";
+            this.text = "N";
             break;
         case 2:
             this.color = "blue";
+            this.text = "O";
             break;
         case 3:
             this.color = "yellow";
+            this.text = "C";
             break;
         default:
             this.color = "black";
@@ -72,6 +90,8 @@ function Circle(x, y, radius) {
         context.strokeStyle = "black";
         context.fillStyle = this.color;
         context.fill();
+        context.font = "20px Arial"
+        context.strokeText(this.text, this.x, this.y);
     }
     this.update = function() {
         this.x += this.dx;
@@ -99,9 +119,9 @@ function Circle(x, y, radius) {
             {
                 if (grid[i].isFilled)
                 {
-                    if ((this.x + radius >= grid[i].x1) && this.x+radius <= grid[i].x2)
+                    if ((this.x +radius>= grid[i].x) && this.x - radius <= grid[i].x)
                     {
-                        if ((this.y - radius >= grid[i].y1) && (this.y -radius <= grid[i].y2))
+                        if ((this.y + radius>= grid[i].y) && (this.y - radius<= grid[i].y))
                         {
                             this.stop();
                         }
@@ -297,10 +317,13 @@ function animate() {
     context.beginPath();
     context.moveTo(this.innerWidth / 2, this.innerHeight);
     context.lineTo(mouse.x, mouse.y);
-    context.strokeStyle = "black";
     if (canShoot == false)
     {
         context.strokeStyle = "red";
+    }
+    else
+    {
+        context.strokeStyle = nextColor;
     }
     context.stroke();
     drawGrid(columns, rows);
