@@ -7,10 +7,22 @@ var columns = 8;
 var rows = 4;
 var circleArray = [];
 var grid = [];
+var compoundNeeded;
+var elementsNeeded  = [];
+var numberNeeded = 0;
 var canShoot = true;
 var midShoot = false;
 var next = Math.floor(Math.random() * 3) + 1;
 var nextColor = idToColor(next);
+
+function gameStart() {
+    compoundNeeded = pickCompound();
+
+}
+function gameOver() {
+    grid = [];
+    circleArray = [];
+}
 window.addEventListener("mousemove", function(event) {
     mouse.x = event.x;
     mouse.y = event.y;
@@ -30,7 +42,7 @@ window.addEventListener("click", function() {
         circleArray.push(newcirc);
         console.log(newcirc)
         midShoot = true;
-        next = Math.floor(Math.random()*3)+1;
+        next = Math.floor(Math.random()*4)+1;
         nextColor = idToColor(next);
     }
 
@@ -53,8 +65,25 @@ function idToColor(id) {
             return "blue";
         case 3:
             return "yellow";
+        case 4:
+            return "red";
         default:
             return "black";
+    }
+}
+function pickCompound() {
+    var num = Math.floor(Math.random()*3) + 1;
+    numberNeeded = Math.floor(Math.random() *3) + 1;
+    switch (num) {
+        case 1:
+            elementsNeeded = [3, 2, 2];
+            return "CO2";
+        case 2:
+            elementsNeeded = [4, 4, 2];
+            return "H2O";
+        case 3:
+            elementsNeeded = [1, 4, 4, 4, 4];
+            return "NH4";
     }
 }
 function Circle(x, y, radius, next) {
@@ -79,6 +108,10 @@ function Circle(x, y, radius, next) {
         case 3:
             this.color = "yellow";
             this.text = "C";
+            break;
+        case 4:
+            this.color = "red";
+            this.text = "H";
             break;
         default:
             this.color = "black";
@@ -168,7 +201,7 @@ function Cell(x1, x2, y1, y2) {
         }
         else
         {
-            context.fillStyle = "red";
+            context.fillStyle = "gray";
         }
         context.beginPath();
         context.fillRect(this.x1, this.y1, (this.x2-this.x1), (this.y2-this.y1))
@@ -255,6 +288,7 @@ function createGrid(rows, columns) {
                 grid[i].adjacent.push(i-rows);
             }
         }
+        grid[i].adjacent.push(i);
         console.log("the adjacents of grid spot: " + i + " are " + grid[i].adjacent);
     }
 }
@@ -271,7 +305,6 @@ function drawGrid(rows, columns) {
     }
 }
 function collide(circle) {
-    var clearNum = 0;
     var cell = grid.length-1;
     console.log("circle (x,y): " + circle.x + " , " + circle.y);
     for (let i = 0; i < grid.length; i++)
@@ -291,17 +324,64 @@ function collide(circle) {
     grid[cell].circle = circle;
     grid[cell].id = circle.id;
     circle.relocate(grid[cell].x, grid[cell].y);
-    for (var i = 0; i < grid[cell].adjacent.length; i++)
+
+
+    var willClear = false;
+    var index = 0;
+    for (var k = 0; k < grid[cell].adjacent.length; k++)
     {
-        if (grid[grid[cell].adjacent[i]].id == grid[cell].id)
+        console.log("FOR POSITION " + grid[cell].adjacent[k]);
+        var adjacentIDs = [];
+        for (var i = 0; i < grid[grid[cell].adjacent[k]].adjacent.length; i++)
         {
-            clearNum++;
-            grid[grid[cell].adjacent[i]].clear();
+            if (grid[grid[grid[cell].adjacent[k]].adjacent[i]].circle != null)
+            {
+                console.log("checking " + grid[grid[cell].adjacent[k]].adjacent[i]);
+                adjacentIDs.push(grid[grid[grid[cell].adjacent[k]].adjacent[i]].id);
+            }
+
+        }
+        var num = elementsNeeded.length;
+
+        for (var i = 0; i < elementsNeeded.length; i++)
+        {
+            if (adjacentIDs.includes(elementsNeeded[i]))
+            {
+                adjacentIDs.splice(adjacentIDs.indexOf(elementsNeeded[i]), 1);
+                num--;
+                if (num == 0)
+                {
+                    willClear = true;
+                    index = grid[cell].adjacent[k];
+                    break;
+                }
+            }
         }
     }
-    if (clearNum > 0)
+
+    if (willClear)
     {
-        grid[cell].clear();
+        for (var i = 0; i < grid[index].adjacent.length; i++)
+        {
+            console.log(grid[index].adjacent[i]);
+            if (grid[grid[index].adjacent[i]].circle != null)
+            {
+                grid[grid[index].adjacent[i]].clear();
+                console.log("clearing " + grid[index].adjacent[i]);
+            }
+
+        }
+        console.log(grid[cell]);
+        grid[index].clear();
+        numberNeeded -= 1;
+        if (numberNeeded <= 0)
+        {
+            compoundNeeded = pickCompound();
+        }
+    }
+    if (grid.every((val) => val.circle != null))
+    {
+        gameOver();
     }
 }
 function animate() {
@@ -325,8 +405,10 @@ function animate() {
     {
         context.strokeStyle = nextColor;
     }
+    context.strokeText(numberNeeded + " " + compoundNeeded, innerWidth/2, innerHeight * (2/3));
     context.stroke();
     drawGrid(columns, rows);
 }
 createGrid(columns, rows);
+gameStart();
 animate();
