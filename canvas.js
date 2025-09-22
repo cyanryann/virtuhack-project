@@ -1,6 +1,6 @@
 var can = document.querySelector("canvas");
-can.width = window.innerWidth;
-can.height = window.innerHeight;
+can.width = 800;
+can.height = 800;
 var context = can.getContext("2d");
 var radius = 40;
 var columns = 8;
@@ -14,8 +14,12 @@ var canShoot = true;
 var midShoot = false;
 var next = Math.floor(Math.random() * 3) + 1;
 var nextColor = idToColor(next);
+var score = 0;
+
 
 function gameStart() {
+    createGrid(columns, rows);
+    animate();
     compoundNeeded = pickCompound();
 
 }
@@ -26,9 +30,13 @@ function gameOver() {
 window.addEventListener("mousemove", function(event) {
     mouse.x = event.x;
     mouse.y = event.y;
-    if (Math.abs(mouse.x - this.innerWidth/2) < 100 && Math.abs(mouse.y - this.innerHeight) < 100)
+    if (Math.abs(mouse.x - can.width/2) < 100 && Math.abs(mouse.y - can.height) < 100)
     {
         canShoot = false;
+    }
+    else if (mouse.y >= can.height)
+    {
+        canShoot = false
     }
     else
     {
@@ -38,7 +46,8 @@ window.addEventListener("mousemove", function(event) {
 window.addEventListener("click", function() {
     if (canShoot && !midShoot)
     {
-        var newcirc = new Circle(this.innerWidth / 2, this.innerHeight - radius, radius, next);
+        score += 10;
+        var newcirc = new Circle(can.width / 2, this.can.height - radius, radius, next);
         circleArray.push(newcirc);
         console.log(newcirc)
         midShoot = true;
@@ -52,10 +61,10 @@ var mouse = {
     y: undefined
 };
 function setdX() {
-    return (mouse.x - this.innerWidth/2) / (this.innerWidth);
+    return (mouse.x - can.width/2) / (can.width);
 }
 function setdY() {
-    return (mouse.y - this.innerHeight) / (this.innerHeight);
+    return (mouse.y - can.height) / (can.height);
 }
 function idToColor(id) {
     switch (id) {
@@ -73,17 +82,17 @@ function idToColor(id) {
 }
 function pickCompound() {
     var num = Math.floor(Math.random()*3) + 1;
-    numberNeeded = Math.floor(Math.random() *3) + 1;
+    numberNeeded = Math.floor(Math.random() *2) + 1;
     switch (num) {
         case 1:
             elementsNeeded = [3, 2, 2];
-            return "CO2";
+            return "Carbon Dioxide";
         case 2:
             elementsNeeded = [4, 4, 2];
-            return "H2O";
+            return "Dihydrogen Monoxide";
         case 3:
-            elementsNeeded = [1, 4, 4, 4, 4];
-            return "NH4";
+            elementsNeeded = [1, 4, 4, 4];
+            return "Ammonia";
     }
 }
 function Circle(x, y, radius, next) {
@@ -99,22 +108,27 @@ function Circle(x, y, radius, next) {
     switch (this.id) {
         case 1:
             this.color = "green";
+            this.shadowColor = "darkgreen";
             this.text = "N";
             break;
         case 2:
             this.color = "blue";
+            this.shadowColor = "darkblue";
             this.text = "O";
             break;
         case 3:
             this.color = "yellow";
+            this.shadowColor = "orange";
             this.text = "C";
             break;
         case 4:
             this.color = "red";
+            this.shadowColor = "darkred";
             this.text = "H";
             break;
         default:
             this.color = "black";
+            this.shadowColor = "white";
             break;
     }
     this.draw = function() {
@@ -122,9 +136,18 @@ function Circle(x, y, radius, next) {
         context.arc(this.x, this.y,this.radius,0,Math.PI*2, false);
         context.strokeStyle = "black";
         context.fillStyle = this.color;
+        context.shadowColor = this.shadowColor;
+        context.shadowOffsetX = 3;
+        context.shadowOffsetY = 3;
+
         context.fill();
-        context.font = "20px Arial"
-        context.strokeText(this.text, this.x, this.y);
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.font = "20px Arial";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillStyle = "black";
+        context.fillText(this.text, this.x, this.y);
     }
     this.update = function() {
         this.x += this.dx;
@@ -133,7 +156,7 @@ function Circle(x, y, radius, next) {
         {
             this.stop();
         }
-        if (this.x + radius > innerWidth || this.x - radius <= 0)
+        if (this.x + radius > can.width || this.x - radius <= 0)
         {
             this.dx = -this.dx;
         }
@@ -252,7 +275,7 @@ function createGrid(rows, columns) {
     {
         for (var k = 0; k < rows; k++) 
         {
-            var newCell = new Cell(k * (innerWidth / rows), (k+1) * (innerWidth/rows),i * (innerHeight / (columns*2)), (i+1) * (innerHeight / (columns*2)));
+            var newCell = new Cell(k * (can.width / rows), (k+1) * (can.width/rows),i * (can.height / (columns*2)), (i+1) * (can.height / (columns*2)));
             grid.push(newCell);
         }
     }
@@ -298,7 +321,7 @@ function drawGrid(rows, columns) {
         for (var k = 0; k < rows; k++)
         {
             context.beginPath();
-            context.strokeRect(k * (innerWidth / rows), i * (innerHeight / (columns*2)), innerWidth/rows, innerHeight / (columns * 2));
+            context.strokeRect(k * (can.width / rows), i * (can.height / (columns*2)), can.width/rows, can.height / (columns * 2));
             context.strokeStyle = "black";
             context.stroke();
         }
@@ -361,6 +384,7 @@ function collide(circle) {
 
     if (willClear)
     {
+        score += 100;
         for (var i = 0; i < grid[index].adjacent.length; i++)
         {
             console.log(grid[index].adjacent[i]);
@@ -386,7 +410,7 @@ function collide(circle) {
 }
 function animate() {
     requestAnimationFrame(animate);
-    context.clearRect(0,0,innerWidth, innerHeight);
+    context.clearRect(0,0,can.width, can.height);
     for (var i = 0; i < grid.length; i++) {
         grid[i].draw();
     }
@@ -395,7 +419,7 @@ function animate() {
     }
 
     context.beginPath();
-    context.moveTo(this.innerWidth / 2, this.innerHeight);
+    context.moveTo(can.width / 2, can.height);
     context.lineTo(mouse.x, mouse.y);
     if (canShoot == false)
     {
@@ -405,10 +429,13 @@ function animate() {
     {
         context.strokeStyle = nextColor;
     }
-    context.strokeText(numberNeeded + " " + compoundNeeded, innerWidth/2, innerHeight * (2/3));
     context.stroke();
+    context.font = "20px Arial";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.strokeStyle = "black";
+    context.strokeText(numberNeeded + " " + compoundNeeded, can.width/2, can.height * (2/3));
+    context.strokeText("Score: " + score, can.width/2, can.height * (3/4));
+
     drawGrid(columns, rows);
 }
-createGrid(columns, rows);
-gameStart();
-animate();

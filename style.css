@@ -1,3 +1,17 @@
 canvas {
     border: 1px black solid;
+    justify-self: center;
+}
+button {
+    justify-self: center;
+    align-self: center;
+    width: 20%;
+}
+.game {
+    display: flex;
+    justify-content: center;
+}
+.start {
+    display: flex;
+    justify-content: center;
 }

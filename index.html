@@ -5,13 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtu-Hack</title>
     <script src="canvas.js" defer></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="header">
         <!-- Put in title, and links to sections of page-->
     </div>
     <div class="main">
-        <canvas id="game">This browser does not support canvas</canvas>
+        <div class="game">
+            <canvas>This browser does not support canvas</canvas>
+        </div>
+
+        <div class="start">
+            <button onclick="gameStart()">Start!</button>
+        </div>
+
     </div>
     <div class="how-to-play">
         <!-- Put in description, and links to sections of page-->
