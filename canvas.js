@@ -15,19 +15,30 @@ var midShoot = false;
 var next = Math.floor(Math.random() * 3) + 1;
 var nextColor = idToColor(next);
 var score = 0;
+var gameFinished = false;
+var highScore = 0;
 
 
 function gameStart() {
     createGrid(columns, rows);
-    animate();
     compoundNeeded = pickCompound();
+    animate();
+    gameFinished = false;
+    if (score > highScore)
+    {
+        highScore = score;
+    }
+    score = 0;
 
 }
 function gameOver() {
     grid = [];
     circleArray = [];
+    gameFinished = true;
 }
 window.addEventListener("mousemove", function(event) {
+    // FIX MOUSE LOGIC TO FIT THE ZONE 
+    // RIGHT NOW IT MATCHES WITH WHOLE PAGE, NOT CORRECT
     mouse.x = event.x;
     mouse.y = event.y;
     if (Math.abs(mouse.x - can.width/2) < 100 && Math.abs(mouse.y - can.height) < 100)
@@ -44,7 +55,7 @@ window.addEventListener("mousemove", function(event) {
     }
 })
 window.addEventListener("click", function() {
-    if (canShoot && !midShoot)
+    if (canShoot && !midShoot && !gameFinished)
     {
         score += 10;
         var newcirc = new Circle(can.width / 2, this.can.height - radius, radius, next);
@@ -109,21 +120,25 @@ function Circle(x, y, radius, next) {
         case 1:
             this.color = "green";
             this.shadowColor = "darkgreen";
+            this.lightColor = "lightgreen";
             this.text = "N";
             break;
         case 2:
             this.color = "blue";
             this.shadowColor = "darkblue";
+            this.lightColor = "lightblue";
             this.text = "O";
             break;
         case 3:
             this.color = "yellow";
             this.shadowColor = "orange";
+            this.lightColor = "lightgoldenrodyellow";
             this.text = "C";
             break;
         case 4:
             this.color = "red";
             this.shadowColor = "darkred";
+            this.lightColor = "lightcoral";
             this.text = "H";
             break;
         default:
@@ -348,7 +363,8 @@ function collide(circle) {
     grid[cell].id = circle.id;
     circle.relocate(grid[cell].x, grid[cell].y);
 
-
+    //ISSUE WITH CLEAR
+    //WHEN CLEARING H2O, ADJACENT N WAS CLEARED
     var willClear = false;
     var index = 0;
     for (var k = 0; k < grid[cell].adjacent.length; k++)
@@ -401,6 +417,7 @@ function collide(circle) {
         if (numberNeeded <= 0)
         {
             compoundNeeded = pickCompound();
+            checkAll();
         }
     }
     if (grid.every((val) => val.circle != null))
@@ -408,6 +425,68 @@ function collide(circle) {
         gameOver();
     }
 }
+function checkAll() {
+    grid.forEach(element => {
+        var willClear = false;
+        var index = 0;
+        for (var k = 0; k < element.adjacent.length; k++)
+        {
+            console.log("FOR POSITION " + element.adjacent[k]);
+            var adjacentIDs = [];
+            for (var i = 0; i < grid[element.adjacent[k]].adjacent.length; i++)
+            {
+                if (grid[grid[element.adjacent[k]].adjacent[i]].circle != null)
+                {
+                    console.log("checking " + grid[element.adjacent[k]].adjacent[i]);
+                    adjacentIDs.push(grid[grid[element.adjacent[k]].adjacent[i]].id);
+                }
+
+            }
+            var num = elementsNeeded.length;
+
+            for (var i = 0; i < elementsNeeded.length; i++)
+            {
+                if (adjacentIDs.includes(elementsNeeded[i]))
+                {
+                    adjacentIDs.splice(adjacentIDs.indexOf(elementsNeeded[i]), 1);
+                    num--;
+                    if (num == 0)
+                    {
+                        willClear = true;
+                        index = element.adjacent[k];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (willClear)
+        {
+            score += 100;
+            for (var i = 0; i < grid[index].adjacent.length; i++)
+            {
+                console.log(grid[index].adjacent[i]);
+                if (grid[grid[index].adjacent[i]].circle != null)
+                {
+                    grid[grid[index].adjacent[i]].clear();
+                    console.log("clearing " + grid[index].adjacent[i]);
+                }
+
+            }
+            console.log(grid[cell]);
+            grid[index].clear();
+            numberNeeded -= 1;
+            if (numberNeeded <= 0)
+            {
+                compoundNeeded = pickCompound();
+                checkAll();
+            }
+        }
+    });
+    
+}
+
+
 function animate() {
     requestAnimationFrame(animate);
     context.clearRect(0,0,can.width, can.height);
@@ -434,8 +513,23 @@ function animate() {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.strokeStyle = "black";
-    context.strokeText(numberNeeded + " " + compoundNeeded, can.width/2, can.height * (2/3));
-    context.strokeText("Score: " + score, can.width/2, can.height * (3/4));
+    context.fillStyle = "black";
+    if (!gameFinished)
+    {
+        context.fillText("Molecule(s) needed:", (can.width *4) / 5, can.height * (13/20));
+        context.fillText(numberNeeded + " " + compoundNeeded, (can.width*4)/5, can.height * (14/20));
+    }
 
-    drawGrid(columns, rows);
+    context.fillText("Current Score: " + score, (can.width*4)/5, can.height * (16/20));
+    context.fillText("High Score: " + highScore, (can.width*4)/5, can.height * (17/20));
+    if (gameFinished) {
+        context.font = "40px Arial";
+        context.fillText("Game Over", can.width *(1/2), can.height * (5/10));
+        context.font = "30px Arial";
+        context.fillText("To try again, press start!", can.width *(1/2), can.height * (7/10));
+    }
+    if (!gameFinished) {
+        drawGrid(columns, rows);
+    }
+
 }

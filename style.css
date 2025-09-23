@@ -1,17 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 canvas {
     border: 1px black solid;
+    border-radius: 10px;
     justify-self: center;
+    background-color: white;
+}
+body {
+    background-color: rgb(225, 243, 242);
 }
 button {
     justify-self: center;
     align-self: center;
     width: 20%;
+    padding: 10px;
+    background-color: rgb(134, 184, 231);
+    color: white;
+    font-size: 20px;
+    font-family: "Roboto";
+    font-weight: 400;
+    border-radius: 5px;
+}
+button:hover {
+    filter: brightness(1.1);
+}
+button:active {
+    filter: brightness(.8);
 }
 .game {
     display: flex;
     justify-content: center;
 }
 .start {
+    margin-top: 10px;
     display: flex;
     justify-content: center;
 }
