@@ -1,12 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-canvas {
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap');
+canvas {    
     border: 1px black solid;
     border-radius: 10px;
     justify-self: center;
     background-color: white;
+    margin: 25px;
+}
+html, body {
+    min-width: 50%;
+    width: 100%;
 }
 body {
-    background-color: rgb(225, 243, 242);
+    background-color: rgb(180, 230, 228);
+    margin: 0;
 }
 button {
     justify-self: center;
@@ -16,9 +22,10 @@ button {
     background-color: rgb(134, 184, 231);
     color: white;
     font-size: 20px;
-    font-family: "Roboto";
+    font-family: "Zalando Sans Expanded";
     font-weight: 400;
     border-radius: 5px;
+    box-shadow: 1px 1px 1px black;
 }
 button:hover {
     filter: brightness(1.1);
@@ -30,8 +37,72 @@ button:active {
     display: flex;
     justify-content: center;
 }
+h1 {
+    font-family: "Zalando Sans Expanded";
+    font-size: 40px;
+    color: white;
+}
+h3 {
+    font-family: "Zalando Sans Expanded";
+    font-size: 25px;
+    margin-left: 10px;
+}
+p, ul {
+    font-family: "Roboto";
+    margin: 0px 100px;
+}
 .start {
     margin-top: 10px;
     display: flex;
     justify-content: center;
+}
+.items {
+    display: grid;
+    grid-template-columns: 33.33% 33.33% 33.33%;
+    text-align: center;
+}
+.items > a {
+    background-color: rgb(240, 246, 248);
+    border: black 1px solid;
+    font-family: "Zalando Sans Expanded";
+    text-align: center;
+    padding: 10px 0px;
+}
+.title {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: 7% 90%;
+}
+img {
+    max-width: 4em;
+    justify-self: center;
+    align-self: center;
+    filter: invert();
+}
+a:link {
+    color: black;
+}
+a:link:hover {
+    color: blue;
+}
+a:visited {
+    color: black;
+}
+.footer {
+    background-color: rgb(126, 188, 190);
+    height: 40px;
+    padding-top: 10px;
+    padding-left: 10px;
+}
+.footer > p {
+    margin: 0;
+    font-size: 12px;
+    font-family: "Roboto";
+}
+.how-to-play {
+    padding-bottom: 10px;
+}
+.header {
+    background-color: rgb(14, 96, 134);
 }

@@ -37,10 +37,9 @@ function gameOver() {
     gameFinished = true;
 }
 window.addEventListener("mousemove", function(event) {
-    // FIX MOUSE LOGIC TO FIT THE ZONE 
-    // RIGHT NOW IT MATCHES WITH WHOLE PAGE, NOT CORRECT
-    mouse.x = event.x;
-    mouse.y = event.y;
+    const rect = can.getBoundingClientRect();
+    mouse.x = event.clientX - rect.left;
+    mouse.y = event.clientY - rect.top;
     if (Math.abs(mouse.x - can.width/2) < 100 && Math.abs(mouse.y - can.height) < 100)
     {
         canShoot = false;
@@ -92,7 +91,7 @@ function idToColor(id) {
     }
 }
 function pickCompound() {
-    var num = Math.floor(Math.random()*3) + 1;
+    var num = Math.floor(Math.random()*4) + 1;
     numberNeeded = Math.floor(Math.random() *2) + 1;
     switch (num) {
         case 1:
@@ -104,6 +103,12 @@ function pickCompound() {
         case 3:
             elementsNeeded = [1, 4, 4, 4];
             return "Ammonia";
+        case 4:
+            elementsNeeded = [3, 1, 4];
+            return "Hydrogen Cyanide"
+        case 5:
+            elementsNeeded = [3, 2, 2, 4];
+            return "Carboxylic Acid"
     }
 }
 function Circle(x, y, radius, next) {
@@ -343,6 +348,8 @@ function drawGrid(rows, columns) {
     }
 }
 function collide(circle) {
+    // TWO ISSUES STILL
+    // 1) THE LAST CELL CAN SWAP ELEMENTS
     var cell = grid.length-1;
     console.log("circle (x,y): " + circle.x + " , " + circle.y);
     for (let i = 0; i < grid.length; i++)
@@ -362,9 +369,7 @@ function collide(circle) {
     grid[cell].circle = circle;
     grid[cell].id = circle.id;
     circle.relocate(grid[cell].x, grid[cell].y);
-
-    //ISSUE WITH CLEAR
-    //WHEN CLEARING H2O, ADJACENT N WAS CLEARED
+    // I think this is fixed now
     var willClear = false;
     var index = 0;
     for (var k = 0; k < grid[cell].adjacent.length; k++)
@@ -406,8 +411,12 @@ function collide(circle) {
             console.log(grid[index].adjacent[i]);
             if (grid[grid[index].adjacent[i]].circle != null)
             {
-                grid[grid[index].adjacent[i]].clear();
-                console.log("clearing " + grid[index].adjacent[i]);
+                if (elementsNeeded.includes(grid[grid[index].adjacent[i]].id))
+                {
+                    elementsNeeded.splice(elementsNeeded.indexOf(grid[grid[index].adjacent[i]].id), 1);
+                    grid[grid[index].adjacent[i]].clear();
+                    console.log("clearing " + grid[index].adjacent[i]);                }
+
             }
 
         }

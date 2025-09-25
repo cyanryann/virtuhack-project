@@ -3,25 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtu-Hack</title>
+    <title>Virtu Hack</title>
     <script src="canvas.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="header">
         <!-- Put in title, and links to sections of page-->
+         <div class="title">
+            <img src="images/chemistry-flask-svgrepo-com (1).svg"> 
+            <h1>Molecule Masher</h1>
+         </div>
+
+
+         <div class="items">
+            <a href="#intro">
+                Intro
+            </a>
+            <a href="#main">
+                Game
+            </a>
+            <a href="#rules">
+                Rules
+            </a>
+         </div>
     </div>
-    <div class="introduction">
+    <div class="introduction" id="intro">
         <h3>Introduction</h3>
         <p>Hello students!</p>
         <br>
         <p>
-            This website was designed as a way for young learners to practice their fundamental chemistry.
-            Below you be able to find both the game to practice with and some instructions on how to play. Make sure to check out the rules before diving in, and have fun!
+            This website was designed as a way for young learners to practice their fundamental chemistry as part of the "Virtu Hack" Hackathon.
+            Below you be able to find both the game to practice with and some instructions on how to play. Make sure to check out the <a href="#rules">rules</a> before diving in!
+        </p>
+
+        <p>
+            Have fun!
         </p>
 
     </div>
-    <div class="main">
+    <div class="main" id="main">
         <div class="game">
             <canvas>This browser does not support canvas</canvas>
         </div>
@@ -31,18 +52,61 @@
         </div>
 
     </div>
-    <div class="how-to-play">
-        <!-- Put in description, and links to sections of page-->
+    <div class="how-to-play" id="rules">
+        <!-- Put in description-->
          <h3>How To Play</h3>
          <p>
-            The main goal of the game is fairly simply to understand. Upon starting, you will be
+            The main goal of the game is fairly simply to understand. After clicking start, you will be
             asked to form a number of a specific molecule. This can be done by firing orbs that represent some common elements. 
+            Shots will be put in place after hitting the ceiling or other elements, but will bounce off walls, so feel free to make some fun shots!
             Until you have formed the compound listed, any other combinations of elements will not result in a molecule forming. 
+        </p>
+        <p>
+            The game will end if you fill the screen with no room to make new elements.
+        </p>  
+         <br>
+         <p>
+            The types of elements are as listed below:
+         </p>
+         <br>
+         <ul>
+            <li style="color: rgb(218, 203, 0);">
+                C - Carbon                
+            </li>
+            <li style="color: red">
+                H - Hydrogen
+            </li>
+            <li style="color: blue">
+                O - Oxygen
+            </li>
+            <li style="color: green">
+                N - Nitrogen
+            </li>
+
+         </ul>
+         <br>
+         <p>
+            Before you shoot an orb, there will be an arrow indicator of the direction you are aiming in.
+            This arrow has two purposes, as it'll both guide you and also match the color of the element you'll shoot next!
+            You can refer to the colors above to see which element corresponds to which hue. 
          </p>
          <br>
          <p>
-            The game will end if you fill the screen with no room to make new elements.
+            There isn't a real end to the incoming compounds, so just aim for a high score!
          </p>
+         <br>
+        <p>
+            DISCLAIMER: The formation of compounds has been generalized for the sake of playability, and does not take into account atom rotation, position, etc.
+            This game is not meant as actual representation of molecule formation, but more a way to memorize what elements make up some common compounds
+        </p>
+    </div>
+    <div class="footer">
+        <p>
+            Website by Sean Ryan
+        </p>
+        <p>
+            Logo Graphic created by Konstantin Filatov
+        </p>
     </div>
 </body>
 </html>
