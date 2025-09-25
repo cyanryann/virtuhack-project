@@ -17,19 +17,32 @@ var nextColor = idToColor(next);
 var score = 0;
 var gameFinished = false;
 var highScore = 0;
-
+var flipper = false;
+var isAnimating = false;
+var audio = document.querySelector("audio");
 
 function gameStart() {
+    grid = [];
+    circleArray = [];
+    context.clearRect(0,0, can.width, can.height);
     createGrid(columns, rows);
     compoundNeeded = pickCompound();
-    animate();
+    if (!isAnimating)
+    {
+        isAnimating = true;
+        animate();
+    }
+
     gameFinished = false;
     if (score > highScore)
     {
         highScore = score;
     }
     score = 0;
-
+    mouse = {
+        x: can.width / 2,
+        y: can.height / 2
+    };
 }
 function gameOver() {
     grid = [];
@@ -44,7 +57,7 @@ window.addEventListener("mousemove", function(event) {
     {
         canShoot = false;
     }
-    else if (mouse.y >= can.height)
+    else if (mouse.y >= can.height - 30)
     {
         canShoot = false
     }
@@ -57,12 +70,17 @@ window.addEventListener("click", function() {
     if (canShoot && !midShoot && !gameFinished)
     {
         score += 10;
-        var newcirc = new Circle(can.width / 2, this.can.height - radius, radius, next);
+        var newcirc = new Circle(can.width / 2, can.height - radius, radius, next);
+        newcirc.dx = setdX();
+        newcirc.dy = setdY();
         circleArray.push(newcirc);
         console.log(newcirc)
         midShoot = true;
         next = Math.floor(Math.random()*4)+1;
         nextColor = idToColor(next);
+        audio.src = "sounds/pop.wav";
+        audio.currentTime = 0;
+        audio.play();
     }
 
 })
@@ -71,10 +89,10 @@ var mouse = {
     y: undefined
 };
 function setdX() {
-    return (mouse.x - can.width/2) / (can.width);
+    return (mouse.x - can.width/2) * 10 / (can.width);
 }
 function setdY() {
-    return (mouse.y - can.height) / (can.height);
+    return (mouse.y - can.height) * 10 / (can.height);
 }
 function idToColor(id) {
     switch (id) {
@@ -109,14 +127,15 @@ function pickCompound() {
         case 5:
             elementsNeeded = [3, 2, 2, 4];
             return "Carboxylic Acid"
+        case 6:
+            elementsNeeded = [3, 2];
+            return "Carbon Monoxide"
     }
 }
 function Circle(x, y, radius, next) {
     this.x = x;
     this.y = y;
     this.radius = radius;
-    this.dx = setdX() * 10;
-    this.dy = setdY() * 10;
     this.hasStopped = false;
     this.id = next
     this.cellID = null;
@@ -226,7 +245,7 @@ function Circle(x, y, radius, next) {
         this.isClearing = true;
     }
 }
-function Cell(x1, x2, y1, y2) {
+function Cell(x1, x2, y1, y2, color) {
     this.x1 = x1;
     this.x2 = x2;
     this.y1 = y1;
@@ -238,14 +257,7 @@ function Cell(x1, x2, y1, y2) {
     this.id = null;
     this.adjacent = [];
     this.draw = function() {
-        if (this.isFilled == true)
-        {
-            context.fillStyle = "white";
-        }
-        else
-        {
-            context.fillStyle = "gray";
-        }
+        context.fillStyle = color;
         context.beginPath();
         context.fillRect(this.x1, this.y1, (this.x2-this.x1), (this.y2-this.y1))
 
@@ -295,7 +307,30 @@ function createGrid(rows, columns) {
     {
         for (var k = 0; k < rows; k++) 
         {
-            var newCell = new Cell(k * (can.width / rows), (k+1) * (can.width/rows),i * (can.height / (columns*2)), (i+1) * (can.height / (columns*2)));
+            var color;
+            if (i % 2 == 0)
+            {
+                if (k % 2 == 0)
+                {
+                    color = "lightgray";   
+                }
+                else
+                {
+                    color = "white";
+                }
+            }
+            else
+            {
+                if (k%2 == 0)
+                {
+                    color = "white";
+                }
+                else
+                {
+                    color="lightgray";
+                }
+            }
+            var newCell = new Cell(k * (can.width / rows), (k+1) * (can.width/rows),i * (can.height / (columns*2)), (i+1) * (can.height / (columns*2)), color);
             grid.push(newCell);
         }
     }
@@ -317,7 +352,6 @@ function createGrid(rows, columns) {
         }
         if (grid[i+rows] != null)
         {
-            console.log("CHECK FOR SPOT BELOW" + i);
             if (grid[i].x1 == grid[i+rows].x1)
             {
                 grid[i].adjacent.push(i+rows);
@@ -325,14 +359,12 @@ function createGrid(rows, columns) {
         }
         if (grid[i-rows] != null)
         {
-            console.log("CHECK FOR SPOT ABOVE" + i);
             if (grid[i].x1 == grid[i-rows].x1)
             {
                 grid[i].adjacent.push(i-rows);
             }
         }
         grid[i].adjacent.push(i);
-        console.log("the adjacents of grid spot: " + i + " are " + grid[i].adjacent);
     }
 }
 function drawGrid(rows, columns) {
@@ -350,13 +382,15 @@ function drawGrid(rows, columns) {
 function collide(circle) {
     // TWO ISSUES STILL
     // 1) THE LAST CELL CAN SWAP ELEMENTS
-    var cell = grid.length-1;
+    var cell = 0;
+    var unSet = true;
     console.log("circle (x,y): " + circle.x + " , " + circle.y);
     for (let i = 0; i < grid.length; i++)
     {
-        if (!grid[i].isFilled && cell == null)
+        if (!grid[i].isFilled && unSet)
         {
             cell = i;
+            unSet = false;
         }
         else if (grid[cell].distance(circle) > grid[i].distance(circle) && !grid[i].isFilled) {
             cell = i;
@@ -406,6 +440,9 @@ function collide(circle) {
     if (willClear)
     {
         score += 100;
+        audio.src = "sounds/ping.wav";
+        audio.currentTime = 0;
+        audio.play();
         for (var i = 0; i < grid[index].adjacent.length; i++)
         {
             console.log(grid[index].adjacent[i]);
@@ -472,6 +509,8 @@ function checkAll() {
         if (willClear)
         {
             score += 100;
+            audio.src = "sounds/ping.wav";
+            audio.play();
             for (var i = 0; i < grid[index].adjacent.length; i++)
             {
                 console.log(grid[index].adjacent[i]);
@@ -511,14 +550,14 @@ function animate() {
     context.lineTo(mouse.x, mouse.y);
     if (canShoot == false)
     {
-        context.strokeStyle = "red";
+        context.strokeStyle = "darkred";
     }
     else
     {
         context.strokeStyle = nextColor;
     }
     context.stroke();
-    context.font = "20px Arial";
+    context.font = "20px Zalando Sans Expanded";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.strokeStyle = "black";
