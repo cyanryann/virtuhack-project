@@ -15,7 +15,7 @@ var midShoot = false;
 var next = Math.floor(Math.random() * 3) + 1;
 var nextColor = idToColor(next);
 var score = 0;
-var gameFinished = false;
+var gameFinished = true;
 var highScore = 0;
 var flipper = false;
 var isAnimating = false;
@@ -57,9 +57,13 @@ window.addEventListener("mousemove", function(event) {
     {
         canShoot = false;
     }
-    else if (mouse.y >= can.height - 30)
+    else if (mouse.y >= can.height - 30 || mouse.y < 0)
     {
         canShoot = false
+    }
+    else if (gameFinished)
+    {
+        canShoot = false;
     }
     else
     {
