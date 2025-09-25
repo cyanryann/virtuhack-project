@@ -13,9 +13,13 @@ The types of elements are as listed below:
 
 
 C - Carbon
+
 H - Hydrogen
+
 O - Oxygen
+
 N - Nitrogen
+
 
 Before you shoot an orb, there will be an arrow indicator of the direction you are aiming in. This arrow has two purposes, as it'll both guide you and also match the color of the element you'll shoot next! You can refer to the colors above to see which element corresponds to which hue.
 
@@ -29,10 +33,16 @@ Included Compounds:
 
 
 Ammonia
+
 Carbon Monoxide
+
 Carbon Dioxide
+
 Carboxylic Acid
+
 Dihydrogen Monoxide
+
 Hydrogen Cyanide
+
 
 DISCLAIMER: The formation of compounds has been generalized for the sake of playability, and does not take into account atom rotation, position, etc. This game is not meant as actual representation of molecule formation, but more a way to memorize what elements make up some common compounds
